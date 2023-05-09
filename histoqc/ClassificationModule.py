@@ -2,6 +2,7 @@ import logging
 import os
 import re
 import sys
+import cv2
 
 from ast import literal_eval as make_tuple
 
@@ -172,10 +173,10 @@ def byExampleWithFeatures(s, params):
 
             model_vals = []
             model_labels = np.empty([0, 1])
-
+            print(params["examples"].splitlines())
             for ex in params["examples"].splitlines():
                 ex = re.split(r'(?<!\W[A-Za-z]):(?!\\)', ex)  # workaround for windows: don't split on i.e. C:\
-                img = io.imread(ex[0])
+                img = cv2.imread(ex[0])
                 eximg = compute_features(img, params)
                 eximg = eximg.reshape(-1, eximg.shape[2])
 
@@ -201,7 +202,13 @@ def byExampleWithFeatures(s, params):
     clf = params["shared_dict"]["model_" + name]
     img = s.getImgThumb(s["image_work_size"])
     feats = compute_features(img, params)
+    print(feats.shape)
+    print(img.shape)
+    print(model_vals.shape)
+    print(model_labels.shape)
     cal = clf.predict_proba(feats.reshape(-1, feats.shape[2]))
+    print(feats.reshape(-1, feats.shape[2]).shape)
+    print(cal.shape)
     cal = cal.reshape(img.shape[0], img.shape[1], 2)
 
     mask = cal[:, :, 1] > thresh
